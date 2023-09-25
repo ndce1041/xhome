@@ -1,4 +1,5 @@
 # 环境: Linux
+# TODO 适配windows 通用性主要是“\r\n”
 
 import socket
 import re
@@ -190,6 +191,7 @@ class WSGIServer:
         # self.tcp_server_socket.close()
 
     # 读取配置文件
+    # TODO 增加路由功能1.静态资源 2.普通网站 3.带参数url 4.正则匹配url
     def setting(self):
         logging.info("#读取配置文件......#")
         conf = open('./xweb.conf', 'r')
@@ -234,6 +236,7 @@ class WSGIServer:
 
 
 # 解析请求
+# TODO 优化解析函数,请求头&响应头
 class Un_Request:
     def __init__(self, content):
         self.content = content
