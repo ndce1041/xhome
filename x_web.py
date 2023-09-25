@@ -1,5 +1,5 @@
 # 环境: Linux
-# TODO 适配windows 通用性主要是“\r\n”
+
 
 import socket
 import re
@@ -9,6 +9,18 @@ import sys
 import logging
 from select import epoll, EPOLLIN
 from urllib.parse import unquote  # , quote
+
+# TODO 适配windows 通用性主要是“\r\n”
+if sys.platform.startswith('win'):
+    ENTER = '\n'
+    pass
+elif sys.platform.startswith('linux'):
+    ENTER = '\r\n'
+    pass
+else:
+    logging.warning('未知系统###:%s,默认为linux' % sys.platform)
+    ENTER = '\r\n'
+
 
 logging.basicConfig(level=logging.DEBUG,
                     format='%(levelname)s-%(asctime)s - %(filename)s[line:%(lineno)d]:%(message)s\r\n',
@@ -192,6 +204,7 @@ class WSGIServer:
 
     # 读取配置文件
     # TODO 增加路由功能1.静态资源 2.普通网站 3.带参数url 4.正则匹配url
+    # TODO 更多选项移动至配置文件
     def setting(self):
         logging.info("#读取配置文件......#")
         conf = open('./xweb.conf', 'r')
