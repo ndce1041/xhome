@@ -10,6 +10,20 @@ import logging
 from select import epoll, EPOLLIN
 from urllib.parse import unquote  # , quote
 
+
+status_code = {
+    200: 'OK',
+    304: 'NOT MODIFIED',
+    404: 'NOT FOUND',
+    500: 'SERVER ERROR',
+    501: 'NOT IMPLEMENTED',
+    502: 'BAD GATEWAY',
+    503: 'SERVICE UNAVAILABLE',
+    504: 'GATEWAY TIMEOUT'
+}
+
+
+
 # TODO 适配windows 通用性主要是“\r\n”
 if sys.platform.startswith('win'):
     ENTER = '\n'
@@ -256,8 +270,8 @@ class Un_Request:
         self.method = content.split()[0]
         self.path = content.split()[1]
 
-        if '\r\n\r\n' in content:
-            self.body = content.split('\r\n\r\n', 1)[1]
+        if ENTER*2 in content:
+            self.body = content.split(ENTER*2, 1)[1]
         else:
             self.body = ''
         pass
@@ -299,6 +313,16 @@ class Un_Request:
         requests_content['method'] = self.method
         requests_content['body'] = self.body
         return requests_content
+
+
+# TODO 合成响应头
+class response():
+
+    def __init__(self, s_code=200,type=""):
+        self.status_line = ()
+        self.headers = {}
+
+
 
 
 # 开始运行
