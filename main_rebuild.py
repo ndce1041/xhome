@@ -21,10 +21,10 @@ TIMEOUT = 20
 
 
 LOG = True
-DEBUG = logging.DEBUG
-INFO = logging.INFO
-WARNING = logging.WARNING
-ERROR = logging.ERROR
+DEBUG = logging.debug
+INFO = logging.info
+WARNING = logging.warning
+ERROR = logging.error
 if LOG:
     logging.basicConfig(level=DEBUG,
                         format='%(levelname)s-%(asctime)s - %(filename)s[line:%(lineno)d]:%(message)s\r\n',
@@ -39,17 +39,15 @@ else:
 sys.path.append('./web_frame')  # web框架根目录位置 方便导入
 
 # 区别linux 和 windows
-# 使用不同enter
-# 使用不同的io复用模型
-if sys.platform.startswith('win'):
-    ENTER = '\n'
+# if sys.platform.startswith('win'):
+#     ENTER = '\n'
 
-elif sys.platform.startswith('linux'):
-    ENTER = '\r\n'
+# elif sys.platform.startswith('linux'):
+#     ENTER = '\r\n'
 
-else:
-    WARNING('未知系统###:%s,默认为linux' % sys.platform)
-    ENTER = '\r\n'
+# else:
+#     WARNING('未知系统###:%s,默认为linux' % sys.platform)
+#     ENTER = '\r\n'
 
 
 
@@ -118,41 +116,55 @@ class Server:
         while True:
             try:
                 recv_data += new_socket.recv(1024)
-            except:
+            except Exception as e:
                 WARNING('客户端断开连接 IP:%s' % str(client_addr))
                 self.selector.unregister(new_socket.fileno())
                 new_socket.close()
-                break
+                raise Exception('客户端断开连接%s%s' % (str(client_addr), str(e)))
             else:
-                if len(recv_data) == 0:
-                    WARNING('客户端断开连接IP:%s' % str(client_addr))
-                    self.selector.unregister(new_socket.fileno())
-                    new_socket.close()
+                if len(recv_data) == False:  # 收到数据小于等于0 数据接收完毕
                     break
         
         # TODO解码
-        try:
-            recv_data = recv_data.decode('utf-8')
-        except:
-            recv_data = recv_data.decode('gbk')
-        DEBUG('接收到数据')
+        # try:
+        #     recv_data = recv_data.decode('utf-8')
+        # except:
+        #     recv_data = recv_data.decode('gbk')
+        # DEBUG('接收到数据')
 
         # 分割数据
+
+        if "\r\n" in recv_data:
+            ENTER = "\r\n"
+        else:
+            ENTER = "\n"
         data_head,data_body = recv_data.split(ENTER*2)
-        DEBUG('数据分割完成')
-        DEBUG('请求头:\r\n%s' % data_head)
 
         # 解析请求头
-        data_head = data_head.split(ENTER)
+        request_head = {}
+        request_head_list = data_head.split(ENTER)
+        try:
+            request_head['method'],request_head['url'],request_head['protocol'] = request_head_list[0].split(' ')
+        except:
+            ERROR('请求头解析失败')
+            raise Exception('请求头解析失败%s/t%s' % str(client_addr) % str(request_head_list[0]))
+        
+        # 第一行解析成功说明是有效的请求头
 
         return recv_data
+
+
+
 
     def loop(self):
         while True:
             events = self.selector.select()
             for key, mask in events:
                 callback = key.data
-                callback(key)
+                try:
+                    callback(key)
+                except Exception as e:
+                    ERROR('套接字异常中断:%s' % str(e))
                 
 
         
