@@ -24,7 +24,6 @@ status_code = {
 
 
 
-# TODO 适配windows 通用性主要是“\r\n”
 if sys.platform.startswith('win'):
     ENTER = '\n'
     pass
@@ -263,7 +262,6 @@ class WSGIServer:
 
 
 # 解析请求
-# TODO 优化解析函数,请求头&响应头
 class Un_Request:
     def __init__(self, content):
         self.content = content

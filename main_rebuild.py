@@ -6,6 +6,8 @@ import logging
 from urllib.parse import unquote,urlparse  # , quote
 from selectors import DefaultSelector, EVENT_READ, EVENT_WRITE
 
+from analysis_request import AnalysisRequest
+
 STATUS_CODE= {
     200: 'OK',
     304: 'NOT MODIFIED',
@@ -65,6 +67,7 @@ except:
     ERROR('配置文件读取失败,请检查配置文件是否存在或者格式是否正确')
     exit(1)
 else:
+    # TODO 添加静态资源路径
     if "http_port" in conf_dict:
         PORT = conf_dict['http_port']
     if "network_protocol" in conf_dict:
@@ -98,9 +101,10 @@ class Server:
             self.selector.register(new_socket.fileno(), EVENT_READ, self.recv_data, timeout=TIMEOUT)
         else:
 
-            data = self.recv_data(key)
+            request = self.recv_data(key)
             # TODO 处理数据
-            response = data
+            # TODO 路由采用回调函数
+            response = "a"
             ####
 
             key.fileobj.send(response.encode('utf-8'))
@@ -112,7 +116,6 @@ class Server:
         new_socket = key.fileobj
         client_addr = new_socket.getpeername()
         recv_data = b''
-        # TODO 循环接受数据
         while True:
             try:
                 recv_data += new_socket.recv(1024)
@@ -126,32 +129,24 @@ class Server:
                     break
         
         # TODO解码
-        # try:
-        #     recv_data = recv_data.decode('utf-8')
-        # except:
-        #     recv_data = recv_data.decode('gbk')
-        # DEBUG('接收到数据')
+        try:
+            recv_data = recv_data.decode('utf-8')
+        except:
+            ERROR('数据解码失败')
+            raise Exception('数据解码失败%s' % str(client_addr) )
+        DEBUG('接收到数据')
 
         # 分割数据
 
-        if "\r\n" in recv_data:
-            ENTER = "\r\n"
-        else:
-            ENTER = "\n"
-        data_head,data_body = recv_data.split(ENTER*2)
-
-        # 解析请求头
-        request_head = {}
-        request_head_list = data_head.split(ENTER)
         try:
-            request_head['method'],request_head['url'],request_head['protocol'] = request_head_list[0].split(' ')
+            self.request_head = AnalysisRequest(recv_data)
         except:
             ERROR('请求头解析失败')
-            raise Exception('请求头解析失败%s/t%s' % str(client_addr) % str(request_head_list[0]))
+            raise Exception('请求头解析失败%s' % str(client_addr) )
         
         # 第一行解析成功说明是有效的请求头
 
-        return recv_data
+        return self.request_head
 
 
 

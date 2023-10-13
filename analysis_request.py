@@ -9,7 +9,6 @@ class AnalysisRequest(object):
     def __init__(self,recv_data:dict):
         if "\r\n" in recv_data:
             ENTER = "\r\n"
-            print('1')
         else:
             ENTER = "\n"
 
@@ -17,10 +16,11 @@ class AnalysisRequest(object):
         self.data_head,self.data_body = recv_data.split(ENTER*2,1)
 
         # 解析请求头
-        self.request_head = {}
+        self.request_head = {"data":self.data_body}
         request_head_list = self.data_head.split(ENTER)
         try:
             self.request_head['method'],self.request_head['path'],self.request_head['protocol'] = request_head_list[0].split(' ')
+            self.path()
         except:
             #log.error('请求头解析失败')
             raise Exception('请求头首行解析失败/t%s'% str(request_head_list[0]))
@@ -43,7 +43,12 @@ class AnalysisRequest(object):
         if 'Cookie' not in self.request_head:
             self.request_head['Cookie'] = {}
         elif type(self.request_head['Cookie']) == str:
-            self.request_head['Cookie'] = dict([i.split('=',1) for i in self.request_head['Cookie'].split(';')])
+
+            temp = [i.split('=',1) for i in self.request_head['Cookie'].split(';')]
+            for i in range(len(temp)):
+                temp[i][0] = temp[i][0].strip()
+
+            self.request_head['Cookie'] = dict(temp)
         return self.request_head['Cookie']
     
     def accept(self):
@@ -57,12 +62,27 @@ class AnalysisRequest(object):
                     temp = self.request_head['Accept'][i].split(';')
                     for j in temp:
                         if "q=" in j: # 排除除q以外其他参数
-                            self.request_head['Accept'][i] = [temp[0],j.split('=')[1]]
+                            self.request_head['Accept'][i] = (temp[0],j.split('=')[1])
                         else:
-                            self.request_head['Accept'][i] = [temp[0],1]
+                            self.request_head['Accept'][i] = (temp[0],1)
                 else:
-                    self.request_head["Accept"][i] = [self.request_head['Accept'][i],1]
+                    self.request_head["Accept"][i] = (self.request_head['Accept'][i],1)
         return self.request_head['Accept']
 
 
 
+    def path(self):
+
+        if type(self.request_head['path']) == str:
+            url = dict()
+            if '?' in self.request_head['path']:
+                url["parameters"] = self.request_head['path'].split('?')[1].split('&')
+                for i in range(len(url["parameters"])):
+                    url["parameters"][i] = url["parameters"][i].split('=')
+                url['parameters'] = dict(url['parameters'])
+            url['path'] = self.request_head['path'].split('?')[0]
+            self.request_head['path'] = url
+            self.request_head["path"]["url"] = tuple([i for i in url['path'].split('/') if i])
+            # url参数用作路由
+        return self.request_head['path']
+    

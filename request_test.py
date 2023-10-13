@@ -13,3 +13,5 @@ with open(path+'/html_test.txt','r',encoding="utf-8") as f:
     print(data['protocol'])
     print(data.cookie())
     print(data.accept())
+    print(data.cookie())
+    print(data.path())
