@@ -6,3 +6,23 @@ DEBUG-2023-10-19 19:39:22,340 - main_rebuild.py[line:101]:#初始化服务器...
 
 INFO-2023-10-19 19:39:22,340 - main_rebuild.py[line:112]:服务器初始化成功,端口:80,协议:HTTP/1.1,IP:127.0.0.1
 
+DEBUG-2023-10-19 19:39:24,729 - main_rebuild.py[line:117]:服务器接收到新连接,IP:('127.0.0.1', 61535)
+
+DEBUG-2023-10-19 19:39:24,731 - main_rebuild.py[line:117]:服务器接收到新连接,IP:('127.0.0.1', 61536)
+
+INFO-2023-10-19 19:39:24,735 - main_rebuild.py[line:136]:接收数据中...
+
+INFO-2023-10-19 19:39:24,735 - main_rebuild.py[line:145]:数据接收中断 IP:('127.0.0.1', 61536)
+
+DEBUG-2023-10-19 19:39:24,735 - main_rebuild.py[line:163]:接收到数据
+
+DEBUG-2023-10-19 19:39:24,735 - main_rebuild.py[line:174]:请求头解析成功
+
+INFO-2023-10-19 19:39:24,786 - main_rebuild.py[line:136]:接收数据中...
+
+INFO-2023-10-19 19:39:24,786 - main_rebuild.py[line:145]:数据接收中断 IP:('127.0.0.1', 61535)
+
+DEBUG-2023-10-19 19:39:24,786 - main_rebuild.py[line:163]:接收到数据
+
+DEBUG-2023-10-19 19:39:24,786 - main_rebuild.py[line:174]:请求头解析成功
+
