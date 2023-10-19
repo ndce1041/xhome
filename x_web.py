@@ -216,8 +216,7 @@ class WSGIServer:
         # self.tcp_server_socket.close()
 
     # 读取配置文件
-    # TODO 增加路由功能1.静态资源 2.普通网站 3.带参数url 4.正则匹配url
-    # TODO 更多选项移动至配置文件
+
     def setting(self):
         logging.info("#读取配置文件......#")
         conf = open('./xweb.conf', 'r')
@@ -313,7 +312,6 @@ class Un_Request:
         return requests_content
 
 
-# TODO 合成响应头
 class response():
 
     def __init__(self, s_code=200,type=""):

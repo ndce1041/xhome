@@ -5,19 +5,11 @@ import sys
 import logging
 from urllib.parse import unquote,urlparse  # , quote
 from selectors import DefaultSelector, EVENT_READ, EVENT_WRITE
+from url_manager import url_manager
 
 from analysis_request import AnalysisRequest
 
-STATUS_CODE= {
-    200: 'OK',
-    304: 'NOT MODIFIED',
-    404: 'NOT FOUND',
-    500: 'SERVER ERROR',
-    501: 'NOT IMPLEMENTED',
-    502: 'BAD GATEWAY',
-    503: 'SERVICE UNAVAILABLE',
-    504: 'GATEWAY TIMEOUT'
-}
+
 
 TIMEOUT = 20
 
@@ -42,18 +34,8 @@ else:
                         filemode='w',
                         encoding='utf-8')
 
-sys.path.append('./web_frame')  # web框架根目录位置 方便导入
+sys.path.append(PATH)  # web框架根目录位置 方便导入
 
-# 区别linux 和 windows
-# if sys.platform.startswith('win'):
-#     ENTER = '\n'
-
-# elif sys.platform.startswith('linux'):
-#     ENTER = '\r\n'
-
-# else:
-#     WARNING('未知系统###:%s,默认为linux' % sys.platform)
-#     ENTER = '\r\n'
 
 """
 key = [socket,fd,events,data]  套接字,文件描述符,事件,数据
@@ -64,7 +46,7 @@ PORT = 80
 PROTOCOL = 'HTTP/1.1'
 IP = "127.0.0.1"
 
-# 导入config文件
+# 导入config文件  所有项都会声明为全局变量
 DEBUG("#读取配置文件......#")
 
 try:
@@ -74,7 +56,7 @@ except Exception as e:
     ERROR('配置文件读取失败,请检查配置文件是否存在或者格式是否正确',e)
     exit(1)
 else:
-    # TODO 添加静态资源路径
+    # TODO 添加静态资源默认回调
     if "http_port" in conf_dict:
         PORT = conf_dict['http_port']
         print(PORT)
@@ -89,6 +71,7 @@ else:
         print(TIMEOUT)
     if "static_path" in conf_dict:
         STATIC_PATH = conf_dict['static_path']
+        
         print(STATIC_PATH)
     if "static_url" in conf_dict:
         STATIC_URL = conf_dict['static_url'].strip('/')
@@ -106,9 +89,14 @@ class Server:
         self.socket.listen(128)
         self.selector = DefaultSelector()
         # io
-
         self.selector.register(self.socket, EVENT_READ, self.accept)
         # windows 无法传入文件描述符
+
+        # 注册路由
+        self.url = url_manager()
+
+
+
         INFO('服务器初始化成功,端口:%s,协议:%s,IP:%s' % (PORT, PROTOCOL, IP))
 
     def accept(self,key):
@@ -116,13 +104,16 @@ class Server:
             new_socket, client_addr = self.socket.accept()
             DEBUG('服务器接收到新连接,IP:%s' % str(client_addr))
             #new_socket.setblocking(False)
-            # 
+            # epoll poll 同步io都是阻塞的
             self.selector.register(new_socket, EVENT_READ, self.accept)
         else:
 
             self.recv_data(key)
-            # TODO 处理数据
-            # TODO 路由采用回调函数
+            # 数据存在self.request_head中
+
+
+            # TODO 路由分发
+
             response = "a"
             ####
             key[0].send(response.encode('utf-8'))
