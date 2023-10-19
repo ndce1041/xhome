@@ -6,7 +6,7 @@ class AnalysisRequest(object):
     特定项需要调用对应函数进一步解析
     """
 
-    def __init__(self,recv_data:dict):
+    def __init__(self,recv_data):
         if "\r\n" in recv_data:
             ENTER = "\r\n"
         else:
@@ -36,6 +36,9 @@ class AnalysisRequest(object):
     # read only
     def __getitem__(self,key):
         return self.request_head[key]
+    
+    def __str__(self) -> str:
+        return str(self.request_head)
     
 
 
