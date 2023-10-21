@@ -8,7 +8,7 @@ from selectors import DefaultSelector, EVENT_READ, EVENT_WRITE
 from url_manager import url_manager
 
 from analysis_request import AnalysisRequest
-
+from response_maker import ResponseMaker
 
 
 TIMEOUT = 20
@@ -116,7 +116,7 @@ class Server:
 
             response = "a"
             ####
-            key[0].send(response.encode('utf-8'))
+            key[0].send(ResponseMaker(code=404).content())
             self.selector.unregister(key[0])
             key[0].close()
 
