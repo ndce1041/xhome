@@ -7,6 +7,7 @@ STATUS_CODE= {
     200: 'OK',
     304: 'NOT MODIFIED',
     404: 'NOT FOUND',
+    413: 'Content Too Large',
     500: 'SERVER ERROR',
     501: 'NOT IMPLEMENTED',
     502: 'BAD GATEWAY',
@@ -23,7 +24,6 @@ class ResponseMaker:
         self.response_head = {
             'Content-Type': 'text/html; charset=utf-8',
             'Server': 'XHome',
-            "Content-Encoding": "gzip",
             "Date": time.strftime("%a, %d %b %Y %H:%M:%S GMT", time.gmtime()),
         }
         self.response_body = b''
@@ -34,6 +34,7 @@ class ResponseMaker:
 
     def set_head(self,key,value):
         self.response_head[key] = value
+        return self
 
     def set_cookie(self,key,value=None,expires=None,path=None,domain=None,secure=None,httponly=False,samesite=None,max_age=None):
         """
@@ -83,10 +84,12 @@ class ResponseMaker:
             raise Exception('set_cookie参数错误')
         
         self.cange_cookie.append([cookie_group,cookie_setting])
+        return self
         
 
     def set_body(self,body:bytes):
         self.response_body = body
+        return self
 
     def content(self):
         
