@@ -68,14 +68,14 @@ class ResponseMaker:
             # key = {'key1':'value1','key2':'value2'}
 
             cookie_group.update(key)
-        elif type(key)==list & type(value)==list:
+        elif type(key)==list and type(value)==list:
             # key = [key1,key2,key3]
             # value = [value1,value2,value3]
             if len(key) != len(value):
                 raise Exception('key和value长度不一致')
             for i in range(len(key)):
                 cookie_group[key[i]] = value[i]
-        elif type(key)==list & value==None:
+        elif type(key)==list and value==None:
             # key = [[key,value],[key,value]]
             for i in key:
                 cookie_group[i[0]] = i[1]
@@ -89,7 +89,6 @@ class ResponseMaker:
         self.response_body = body
 
     def content(self):
-        # TODO 未完成拼接response
         
         head = [str(i)+ ":" + str(j) for i,j in self.response_head.items() if j != None]
 
