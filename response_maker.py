@@ -105,7 +105,7 @@ class ResponseMaker:
                 cookie_dict = i[0]
                 cookie_setting = i[1]
                 for key,value in cookie_dict.items():
-                    cookie_str += "\r\n" + "Set-Cookie: " + key + "=" + value + cookie_setting
+                    cookie_str += "\r\n" + "Set-Cookie: " + str(key) + "=" + str(value) + cookie_setting
         
         
         return head_str.encode("utf-8") + cookie_str.encode("utf-8") + b'\r\n\r\n' + self.response_body
