@@ -1,7 +1,12 @@
 """
 回调函数格式
-def func(request,...,rest=[]):
+def func(request,key,...,rest=[]):
     return response
+
+request: 请求头解析后的对象 包含二进制的请求体
+key: 套接字 用于底层操作
+
+rest: 路由剩余路径
 """
 
 class url_manager:
@@ -56,6 +61,12 @@ class url_manager:
 
 
     def get(self, path):
+        """
+        这里的path不包含?后的参数
+
+        使用url_manager["path"]["url"] 获取url
+        
+        """
         url_spot = path.split('/')
         url_spot = [i for i in url_spot if i != '']
         if not url_spot:

@@ -7,8 +7,12 @@ from urllib.parse import unquote,urlparse  # , quote
 from selectors import DefaultSelector, EVENT_READ, EVENT_WRITE
 from url_manager import url_manager
 
+import analysis_request
 from analysis_request import AnalysisRequest
+import response_maker
 from response_maker import ResponseMaker
+import static_resources_manager
+from static_resources_manager import static
 
 
 TIMEOUT = 20
@@ -94,6 +98,8 @@ class Server:
 
         # 注册路由
         self.url = url_manager()
+        # 注册默认静态资源回调
+        self.url.add(STATIC_URL,static)
 
 
 
@@ -107,18 +113,28 @@ class Server:
             # epoll poll 同步io都是阻塞的
             self.selector.register(new_socket, EVENT_READ, self.accept)
         else:
-
+            self.selector.unregister(key[0])
             self.recv_data(key)
             # 数据存在self.request_head中
 
-
-            # TODO 路由分发
-
-            response = "a"
+            # 路由分发
+            func,rest = self.url.get(self.request['path']["url"])
+            ans = func(self.request,key,rest=rest)
+            if ans == None:
+                key[0].send(ResponseMaker(code=404).content())
+                key[0].close()
+            elif ans == False:
+                # 表示收发由回调函数自己处理
+                # 注意回调函数需要自己关闭套接字
+                # 最好新建线程处理
+                pass
+            else:
+                key[0].send(ans.content())
+                key[0].close()
             ####
-            key[0].send(ResponseMaker(code=404).content())
-            self.selector.unregister(key[0])
-            key[0].close()
+            
+            
+            
 
     def recv_data(self, key):
         # 接收数据
@@ -143,17 +159,10 @@ class Server:
                     raise Exception('客户端断开连接%s' % (str(client_addr)))
         
 
-        # TODO解码
-        try:
-            recv_data = recv_data.decode('utf-8')
-        except:
-            ERROR('数据解码失败')
-            raise Exception('数据解码失败%s' % str(client_addr) )
-        DEBUG('接收到数据')
 
         # 分割数据
         try:
-            self.request_head = AnalysisRequest(recv_data)
+            self.request = AnalysisRequest(recv_data)
         except Exception as e:
             ERROR('请求头解析失败')
             print(e)

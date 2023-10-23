@@ -10,7 +10,7 @@ MAX_SIZE = 20 * 1024 * 1024 # 20MB
 
 text_type = ['html','css',"csv",'js','txt','json','xml','md'] # 文本类型的文件 用于gzip压缩
 
-def static(request, rest):
+def static(request,key, rest):
     """
     以STATIC_PATH为根目录
     按照rest的路径返回静态资源

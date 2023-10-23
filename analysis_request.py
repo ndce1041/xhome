@@ -1,3 +1,6 @@
+
+ENTER = "\r\n".encode('utf-8')
+
 class AnalysisRequest(object):
     """
     传入数据后分为请求头和请求体
@@ -6,14 +9,13 @@ class AnalysisRequest(object):
     特定项需要调用对应函数进一步解析
     """
 
-    def __init__(self,recv_data):
-        if "\r\n" in recv_data:
-            ENTER = "\r\n"
-        else:
-            ENTER = "\n"
+    def __init__(self,recv_data,):
 
-        # 只分割一次
-        self.data_head,self.data_body = recv_data.split(ENTER*2,1)
+        try:
+            self.data_head,self.data_body = recv_data.split(ENTER*2,1)
+            self.head_decode = self.data_head.decode('utf-8')
+        except:
+            raise Exception('数据解码失败')
 
         # 解析请求头
         self.request_head = {"data":self.data_body}
@@ -32,6 +34,7 @@ class AnalysisRequest(object):
                 continue
             key,value = line.split(':',1)
             self.request_head[key] = value.strip()
+
         
     # read only
     def __getitem__(self,key):
