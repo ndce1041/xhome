@@ -13,7 +13,7 @@ def application(request,key,rest):
     print(request.path())
     print(rest)
 
-    # 返回的是bytes类型
+    # 返回的是ResponseMaker对象
     return new_response
 
 server.url.add('/main/test',application) # 路由注册 中间以/分割即可
