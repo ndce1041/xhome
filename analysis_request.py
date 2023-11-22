@@ -1,5 +1,6 @@
 
-ENTER = "\r\n".encode('utf-8')
+ENTERb = "\r\n".encode('utf-8')
+ENTER = "\r\n"
 
 class AnalysisRequest(object):
     """
@@ -12,20 +13,20 @@ class AnalysisRequest(object):
     def __init__(self,recv_data,):
 
         try:
-            self.data_head,self.data_body = recv_data.split(ENTER*2,1)
+            self.data_head,self.data_body = recv_data.split(ENTERb*2,1)
             self.head_decode = self.data_head.decode('utf-8')
         except:
             raise Exception('数据解码失败')
 
         # 解析请求头
         self.request_head = {"data":self.data_body}
-        request_head_list = self.data_head.split(ENTER)
+        request_head_list = self.head_decode.split(ENTER) # 请求头分割为列表
         try:
             self.request_head['method'],self.request_head['path'],self.request_head['protocol'] = request_head_list[0].split(' ')
             self.path()
         except:
             #log.error('请求头解析失败')
-            raise Exception('请求头首行解析失败/t%s'% str(request_head_list[0]))
+            raise Exception('请求头首行解析失败\t%s'% str(request_head_list[0]))
         
         # 第一行解析成功说明是有效的请求头
         
@@ -78,7 +79,7 @@ class AnalysisRequest(object):
 
 
     def path(self):
-
+        # print(self.request_head['path'])
         if type(self.request_head['path']) == str:
             url = dict()
             if '?' in self.request_head['path']:

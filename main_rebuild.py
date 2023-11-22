@@ -96,10 +96,16 @@ class Server:
         self.selector.register(self.socket, EVENT_READ, self.accept)
         # windows 无法传入文件描述符
 
+
+        # 定义无效路径回调
+        def not_found(request,key,rest):
+            return ResponseMaker(code=404)
         # 注册路由
-        self.url = url_manager()
+        self.url = url_manager(unfound=not_found)
         # 注册默认静态资源回调
         self.url.add(STATIC_URL,static)
+
+
 
 
 
@@ -118,8 +124,13 @@ class Server:
             # 数据存在self.request_head中
 
             # 路由分发
-            func,rest = self.url.get(self.request['path']["url"])
-            ans = func(self.request,key,rest=rest)
+            try:
+                func,rest = self.url.get(self.request['path']["url"])
+                # print(func,rest)
+                ans = func(self.request,key,rest=rest)
+            except Exception as e:
+                ERROR('路由分发失败')
+                print(e)
             if ans == None:
                 key[0].send(ResponseMaker(code=404).content())
                 key[0].close()
@@ -180,7 +191,7 @@ class Server:
             events = self.selector.select(timeout=TIMEOUT)
             for key, mask in events:
                 # 获取key[0]套接字的ip和端口
-                print(key)
+                #print(key)
                 try:
                     ip = key[0].getpeername()
                     print("套接字响应",ip)
