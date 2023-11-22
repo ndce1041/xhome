@@ -8,11 +8,11 @@ from selectors import DefaultSelector, EVENT_READ, EVENT_WRITE
 from url_manager import url_manager
 
 import analysis_request
-from analysis_request import AnalysisRequest
+AnalysisRequest = analysis_request.AnalysisRequest
 import response_maker
-from response_maker import ResponseMaker
+ResponseMaker = response_maker.ResponseMaker
 import static_resources_manager
-from static_resources_manager import static
+static = static_resources_manager.static
 
 
 TIMEOUT = 20
@@ -165,7 +165,11 @@ class Server:
                 if len(recv_data) == False:  # 收到数据小于等于0 说明客户端断开连接
                     WARNING('客户端断开连接 IP:%s' % str(client_addr))
                     INFO(recv_data.decode('utf-8'))
-                    self.selector.unregister(new_socket.fileno())
+                    try:
+                        self.selector.unregister(new_socket.fileno())
+                    except:
+                        pass
+                    
                     new_socket.close()
                     raise Exception('客户端断开连接%s' % (str(client_addr)))
         
