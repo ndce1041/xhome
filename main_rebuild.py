@@ -169,9 +169,7 @@ class Server:
                         self.selector.unregister(new_socket.fileno())
                     except:
                         pass
-                    
                     new_socket.close()
-                    raise Exception('客户端断开连接%s' % (str(client_addr)))
         
 
 
