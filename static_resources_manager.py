@@ -19,17 +19,24 @@ def static(request,key, rest):
     """
     global STATIC_PATH # 静态资源路径（绝对路径）
 
+    path = STATIC_PATH
+
     for i in rest:
-        STATIC_PATH += '/' + i
+        path += '/' + i
+
+
+    # print(request.path())
+    # print(rest)
+    # print(path)
 
     # 判断文件是否存在
     # 判断文件大小 如果文件过大则不返回 需要额外处理
 
     try:
-        size = os.path.getsize(STATIC_PATH)
+        size = os.path.getsize(path)
         if size > MAX_SIZE:
             return ResponseMaker(413)
-        with open(STATIC_PATH, 'rb') as f:
+        with open(path, 'rb') as f:
             response_body = f.read()
     except Exception as e:
         print(e)
@@ -38,7 +45,7 @@ def static(request,key, rest):
     response = ResponseMaker(200)
 
 
-    content_type = STATIC_PATH.split('.')[-1]
+    content_type = path.split('.')[-1]
     if content_type in text_type: # 如果是文本类型的文件 则进行gzip压缩
         response_body = gzip.compress(response_body)
         content_type = 'text/' + content_type

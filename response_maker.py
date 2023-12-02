@@ -48,7 +48,7 @@ class ResponseMaker:
         if path:
             cookie_setting += "; Path=" + str(path)
         if domain:
-                        cookie_setting += "; Domain=" + str(domain)
+            cookie_setting += "; Domain=" + str(domain)
         if max_age:
             cookie_setting += "; Max-Age=" + str(max_age)
         if samesite:

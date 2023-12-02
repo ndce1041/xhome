@@ -50,6 +50,8 @@ class AnalysisRequest(object):
         return str(self.request_head)
     
 
+    
+
 
     def cookie(self):
         if 'Cookie' not in self.request_head:
@@ -83,7 +85,6 @@ class AnalysisRequest(object):
 
 
 
-
     def path(self):
         # print(self.request_head['path'])
         if type(self.request_head['path']) == str:
@@ -93,9 +94,18 @@ class AnalysisRequest(object):
                 for i in range(len(url["parameters"])):
                     url["parameters"][i] = url["parameters"][i].split('=')
                 url['parameters'] = dict(url['parameters'])
+            else:
+                url["parameters"] = {}
             url['path'] = self.request_head['path'].split('?')[0]
+            url['url'] = tuple([i for i in url['path'].split('/') if i])
             self.request_head['path'] = url
-            self.request_head["path"]["url"] = tuple([i for i in url['path'].split('/') if i])
             # url参数用作路由
+
+            """
+            path--parameters url后的参数dict
+                --path url本身str
+                --url  url分割为元组
+            
+            """
         return self.request_head['path']
     

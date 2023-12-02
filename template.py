@@ -30,7 +30,8 @@ class Template:
         """
 
         def replace(match):
-            temp = match.group(0)
+            temp = match.group("name")
+            # print(temp)
             temp = temp.split(".")
             value = self.template_dict.copy()
             for i in temp:
@@ -38,10 +39,12 @@ class Template:
                     value = value[i]
                 else:
                     return "NOT FOUND"
-            return value
+            return str(value)
 
-        self.template = re.sub(r"{{ (%s) }}",replace,self.template)
+        self.template = re.sub(r"{{ (?P<name>.+) }}",replace,self.template)
         # return self.template
 
         # comp = re.compile(r"{{ %s }}")
+        
+
 
