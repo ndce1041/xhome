@@ -13,6 +13,8 @@ class Template:
         self.template = self.read_template()
         self.replace_template()
 
+
+    def render(self):
         return rm.ResponseMaker().set_body(self.template.encode("utf-8"))
         
     def read_template(self):
@@ -26,10 +28,6 @@ class Template:
         """
         替换模板
         """
-        self.template = re.sub(r"{{ (%s) }}",replace,self.template)
-        # return self.template
-
-        # comp = re.compile(r"{{ %s }}")
 
         def replace(match):
             temp = match.group(0)
@@ -41,3 +39,9 @@ class Template:
                 else:
                     return "NOT FOUND"
             return value
+
+        self.template = re.sub(r"{{ (%s) }}",replace,self.template)
+        # return self.template
+
+        # comp = re.compile(r"{{ %s }}")
+

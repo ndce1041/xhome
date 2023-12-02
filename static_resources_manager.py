@@ -6,6 +6,8 @@ from response_maker import ResponseMaker
 import os
 import gzip
 
+from read_config import *
+
 MAX_SIZE = 20 * 1024 * 1024 # 20MB
 
 text_type = ['html','css',"csv",'js','txt','json','xml','md'] # 文本类型的文件 用于gzip压缩

@@ -9,5 +9,5 @@ url.add('/a/b/c', '/a/b/c')
 url.add('/a/b/d', '/a/b/d')
 
 
-print(url.get('/a'))
+print(url.get(['a', 'b', 'f']))
 
