@@ -92,6 +92,7 @@ class url_manager:
         # 由于url末尾节点一定有func 所以无func时url_spot一定完整
         func = temp.get("func")
         if not func:
+            print("WARNING: 未找到对应的回调函数")
             return self.unfound, url_spot
         return func,url_spot
 

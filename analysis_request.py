@@ -49,7 +49,8 @@ class AnalysisRequest(object):
     def __str__(self) -> str:
         return str(self.request_head)
     
-
+    def body(self):
+        return self.request_head['body']
     
 
 

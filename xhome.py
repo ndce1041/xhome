@@ -209,7 +209,7 @@ class Server:
                 #print(key)
                 try:
                     ip = key[0].getpeername()
-                    INFO("套接字响应",ip)
+                    INFO("套接字响应%s"%str(ip))
                 except:
                     pass
             
