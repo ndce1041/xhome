@@ -1,6 +1,5 @@
 # 技术文档
 github:https://github.com/ndce1041/secondhandwebsite
-JNU_id = 2021104247
 
 ## 后端框架相关
 
