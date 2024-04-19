@@ -6,38 +6,35 @@ github:https://github.com/ndce1041/secondhandwebsite
 ### 1. 后端框架整体设计思路
 
 
-主循环所在文件`xhome.py`
+主循环所在文件`runtime.py`
 最终目标为创造一个轻量级，强拓展性，高性能高并发的高通用性后端框架
 
-使用python `selectors`库来搭建套接字池 主要作用是兼容windows和linux的差异,windows环境会自动选择`poll / select` 方式托管套接字,而linux环境会选择更高效的`epoll`管理套接字,此外windows环境文件描述符不能正常使用,需要直接传入套接字
+2.0以后对代码结构进行重构,引入协程,结合响应器模式和生成者消费者模式,极大提高了并发性.
 
 #### 主要运行逻辑：
-（1）.加载日志模块,读取配置文件`xweb.conf`初始化原始socket后,记录其文件描述符并投入套接字队列`selector`中设置对应回调等待响应
-（2）.同时注册路由`url`在路由中写入`默认无效路径回调函数`和`默认静态资源回调函数`。
-
-（3）.`selector`套接字池中的套接字接收到前端请求进入可读状态后交由`recv_data`接收数据，首先对比文件描述符，如果为原始套接字则表示将接收的为新套接字，接收后投入`selector`中；如果不是表示有可读的前端请求。
-（4）.前端请求为二进制数据，每次接收1024字节数据，循环接收数据直至读空（读空会报一个错，如果断开连接了会读取到0）。
-（5）.接收完毕交给`AnalysisRequest`对象解析，首先解析是否为http请求，如果是则返回请求路径,交给路由`url`寻找对应地址的回调函数，如果找到则将解析后的请求传入，否则执行默认无效路径回调函数。
-（6）.请求完成后直接断开连接，完成此次http请求。进入下一个循环
+（1）.读取配置文件`xweb.conf`初始化原始socket后,记录其文件描述符并投入套接字队列`selector`中设置对应回调等待响应
+（2）.同时注册路由`url`在路由中写入`默认无效路径回调函数`和`默认静态资源回调函数`。并且创建任务队列。
+（3）.实例化响应器`reactor`和指定个数的处理器`handler`都按协程要求编写，开始执行协程loop。
+（4）.`reactor`:  管理`selector`套接字池中的套接字接收到前端请求进入可读状态后交由`recv_data`接收数据，首先对比文件描述符，如果为原始套接字则表示将接收的为新套接字，接收后投入`selector`中；如果不是表示有可读的前端请求。将前端请求放入任务队列供处理器接取
+（5）.`handler`:接收前端请求，每次接收1024字节数据，循环接收直至读空（需要用select判断是否读空否则协程中会持续堵塞，如果断开连接了会读取到0）。接收完毕交给`AnalysisRequest`对象解析，首先解析是否为http请求，如果是则返回请求路径,交给路由`url`寻找对应地址的回调函数，如果找到则将解析后的请求传入，否则执行默认无效路径回调函数。
+（6）.请求完成后抛弃此socket或根据需要再次投入`selector`，完成此次http请求。获取下一个任务。
 
 ##### 注意事项：
-* 使用Server()实例化服务器对象
-* 使用Server.loop()开启服务器
 * 一个应用应该具有至少一个回调函数，否则只会返回404。
 
 
 一个最小系统应具有如下内容
 ```python
-import xhome as xh
+import runtime
 import response_maker as rm
 
-server = xh.Server()
+server = runtime.Server()
 
 def index(request,key,rest):
     return rm.ResponseMaker().set_body("Hello World".encode("utf-8"))
 
 server.url.add("/",index)
-server.loop()
+server.start()
 ```
 
 
@@ -101,7 +98,7 @@ def func(request,key,rest=[]):
 包含配置端口，ip，静态文件地址，网页协议等
 由`read_config.py`文件读取，import后会将其中参数读出保存为全局参数
 
-### 7. 日志功能
+### 7. 日志功能(目前暂时取消，之后会做异步日志)
 
 根据日期命名文件保存在根目录当中，记录内核活动，请求处理情况
 应用中可以通过
@@ -139,3 +136,6 @@ def func(request,key,rest=[]):
 * `print(request)` 重载了`__str__` 单纯方便debug
 
 注意：现在还不能根据Content-Type自动处理负载，需要中间件进行处理
+
+
+# 只对接口和运行逻辑做基本解释
