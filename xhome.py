@@ -64,7 +64,6 @@ IP = "127.0.0.1"
 #     ERROR('配置文件读取失败,请检查配置文件是否存在或者格式是否正确',e)
 #     exit(1)
 # else:
-#     # TODO 添加静态资源默认回调
 #     if "http_port" in conf_dict:
 #         PORT = conf_dict['http_port']
 #         print(PORT)
@@ -123,7 +122,6 @@ class Server:
             # epoll poll 同步io都是阻塞的
             self.selector.register(new_socket, EVENT_READ, self.accept)
         else:
-            self.selector.unregister(key[0])
             self.recv_data(key)
             # 数据存在self.request_head中
 
@@ -162,11 +160,12 @@ class Server:
         new_socket = key.fileobj
         client_addr = new_socket.getpeername()
         recv_data = b''
+        try:
+            new_socket.setblocking(False)
+        except:
+            INFO('设置非阻塞失败')
         while True:
-            try:
-                new_socket.setblocking(False)
-            except:
-                INFO('设置非阻塞失败')
+
 
             try:
                 recv_data += new_socket.recv(1024)
@@ -221,8 +220,48 @@ class Server:
                 #     ERROR('套接字异常中断:%s' % str(e))
                 
 
-        
 
+    
+
+
+class Handler:
+
+    def __init__(self,key):
+        self.key = key
+        pass
+
+    def handle(self):
+        # 接收数据
+        INFO("接收数据中...")
+        sk = self.key[0]
+        client_addr = sk.getpeername()
+        recv_data = b''
+        try:
+            sk.setblocking(False)
+        except:
+            pass
+        while True:
+            try:
+                recv_data += sk.recv(1024)
+            except Exception as e:
+                # 数据传输完成  大概
+                break
+            else:
+                if len(recv_data) == False:  # 收到数据小于等于0 说明客户端断开连接
+                    try:
+                        self.selector.unregister(sk.fileno())
+                    except:
+                        pass
+                    sk.close()
+        
+        # 分割数据
+        try:
+            self.request = AnalysisRequest(recv_data)
+        except Exception as e:
+
+            raise Exception('请求头解析失败%s' % str(client_addr) )
+        
+        # 第一行解析成功说明是有效的请求头
 
 
 
