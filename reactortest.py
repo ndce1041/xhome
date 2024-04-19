@@ -15,6 +15,6 @@ loop = asyncio.get_event_loop()
 
 selector.register(or_sk,EVENT_READ)
 que = asyncio.Queue()
-react = reactor.reactor(selector,que,fd_or_sk,loop)
+react = reactor.Reactor(selector,que,fd_or_sk,loop)
 
 loop.run_until_complete(react.loop_reactor())

@@ -8,11 +8,14 @@ import time
 ttlist = []
 
 
-def tcp_connect_tool(num, ip, port, timeout=5,delay=0.1):
+def tcp_connect_tool(num, ip, port, timeout=1,delay=0.1):
     for i in range(num):
         sk = socket.socket()
         sk.connect((ip, port))
         sk.settimeout(timeout)
+
+        sk.send(b'GET / HTTP/1.1\r\n\r\naaa')
+
         ttlist.append(sk)
         print('连接成功:', i)
         time.sleep(delay)

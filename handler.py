@@ -3,47 +3,60 @@ AnalysisRequest = analysis_request.AnalysisRequest
 import asyncio
 import response_maker
 ResponseMaker = response_maker.ResponseMaker
+import select
 
 
 
 class Handler:
 
-    loop = asyncio.get_running_loop()
 
-
-    def __init__(self,url,queue: asyncio.Queue):
+    def __init__(self,url,queue: asyncio.Queue,loop: asyncio.AbstractEventLoop):
         self.url = url
         self.queue = queue
-
+        self.loop = loop
         self.request = None
+        self.flag = False # 用于标记套接字是否已经关闭
 
         pass
 
     async def recv_data(self,key):
         # 接收数据
-
+        print('接收数据中...')
         sk = key[0]
-
+        sk.setblocking(False)
         recv_data = b''
         while True:
             try:
-                recv_data += await self.loop.sock_recv(sk,1024)
-                if len(recv_data) == False:  # 收到数据小于等于0 说明客户端断开连接
+                print('recv_data')
+                temp = await self.loop.sock_recv(sk,1024)
+                print(temp)
+                recv_data += temp
+                if temp == b'':  # 收到数据小于等于0 说明客户端断开连接
                     try:
-                        self.selector.unregister(sk.fileno())
-                        sk.close()
+                        print('recv_data close')
+                        # 此时无论如何都不再处理
+                        self.flag = True
+
+                        break
                     except:
                         pass
+                a,_,_ = select.select([sk],[],[],0)
+                if not a:
+                    # sk读空
+                    break
             except Exception as e:
-                # 数据传输完成  大概
+                # 此时发送未知错误
+                print('recv_data error')
                 break
         
         # 分割数据
         try:
             self.request = AnalysisRequest(recv_data)
         except Exception as e:
-            client_addr = sk.getpeername()
-            raise Exception('请求头解析失败%s' % str(client_addr) )
+            print(e)
+            self.flag = True
+
+            #raise Exception('请求头解析失败%s' % str(client_addr) )
         
         # 第一行解析成功说明是有效的请求头
 
@@ -68,11 +81,22 @@ class Handler:
             #     # 注意回调函数需要自己关闭套接字
             #     pass
             else:
-                await self.loop.sock_sendall(ans.content())
+                print(ans.content())
+                await self.loop.sock_sendall(key.fileobj,ans.content())
+
+            key[0].close()
             ####
 
     async def loop_handle(self):
         while True:
             key = await self.queue.get()
+            print("handle step1 get")
             await self.recv_data(key)
-            await self.handle(key)
+            print("handle step2 recv")
+            if not self.flag:
+                await self.handle(key)
+                print("handle step3 handle")
+            else:
+                key[0].close()
+                self.flag = False
+                

@@ -10,7 +10,7 @@ except Exception as e:
 else:
     # TODO 添加静态资源默认回调
     if "http_port" in conf_dict:
-        PORT = conf_dict['http_port']
+        PORT = conf_dict['port']
         print(PORT)
     if "network_protocol" in conf_dict:
         PROTOCOL = conf_dict['network_protocol']

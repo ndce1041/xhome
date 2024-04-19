@@ -6,7 +6,7 @@ from selector import Selector,EVENT_READ
 
 
 
-class reactor:
+class Reactor:
 
     def __init__(self,selector:Selector,queue:asyncio.queues,oringin_socket:int,loop:asyncio.AbstractEventLoop):
         try:
@@ -29,11 +29,12 @@ class reactor:
         else:
             self.selector.unregister(key.fd)  # 剔除否则循环触发事件
             await self.queue.put(key)
+            print(self.queue.qsize())
 
     async def loop_reactor(self):
         while True:
             event = self.selector.select(0)  # 0表示不阻塞
-            print(self.queue.qsize())
+            await asyncio.sleep(0.1)
             if event:
                 for key in event:
                     await self.accept(key)
