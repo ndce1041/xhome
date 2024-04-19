@@ -9,8 +9,7 @@ def index(request,key,rest):
     return handler.ResponseMaker(code=200,content=b'ok')
 
 
-
-
+url.add('/',index)
 
 que = asyncio.Queue()
 

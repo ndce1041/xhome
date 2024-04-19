@@ -100,7 +100,7 @@ class Selector:
             # if E:
             #     ans += [self.fd_to_socket[e] for e in E]
 
-            print('ans',ans)
+            #print('ans',ans)
             return ans
                     
         elif self.pf == 'Linux':

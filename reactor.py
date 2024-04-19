@@ -8,24 +8,32 @@ from selector import Selector,EVENT_READ
 
 class reactor:
 
-    def __init__(self,selector:Selector,queue:asyncio.queues,oringin_socket:int):
-        self.selector = selector
-        self.queue = queue
-        self.o_skfd = oringin_socket
-        self.loop = asyncio.get_running_loop()
-
+    def __init__(self,selector:Selector,queue:asyncio.queues,oringin_socket:int,loop:asyncio.AbstractEventLoop):
+        try:
+            self.selector = selector
+            self.queue = queue
+            self.o_skfd = oringin_socket
+            #self.loop = asyncio.get_event_loop()
+            self.loop = loop
+        except Exception as e:
+            print('error')
 
     async def accept(self,key:Selector.selectkey):
         if self.o_skfd == key.fd:
-            new_socket, client_addr = await self.loop.sock_accept(key.fileobj)
-            new_socket.setblocking(False)
-            self.selector.register(new_socket, EVENT_READ)
+            try:
+                new_socket, client_addr = await self.loop.sock_accept(key.fileobj)
+                new_socket.setblocking(False)
+                self.selector.register(new_socket, EVENT_READ)
+            except Exception as e:
+                print(e)
         else:
-            await self.queue.put(new_socket)
+            self.selector.unregister(key.fd)  # 剔除否则循环触发事件
+            await self.queue.put(key)
 
     async def loop_reactor(self):
         while True:
             event = self.selector.select(0)  # 0表示不阻塞
+            print(self.queue.qsize())
             if event:
                 for key in event:
                     await self.accept(key)
