@@ -27,7 +27,7 @@ class Reactor:
             except Exception as e:
                 print(e)
         else:
-            self.selector.unregister(key.fd)  # 剔除否则循环触发事件
+            self.selector.unregister(key.fileobj)  # 剔除否则循环触发事件
             await self.queue.put(key)
             print(self.queue.qsize())
 
