@@ -8,10 +8,10 @@ from selector import Selector,EVENT_READ
 
 class Reactor:
 
-    def __init__(self,selector:Selector,queue:asyncio.queues,oringin_socket:int,loop:asyncio.AbstractEventLoop):
+    def __init__(self,selector:Selector,queue,oringin_socket:int,loop:asyncio.AbstractEventLoop):
         try:
             self.selector = selector
-            self.queue = queue
+            self.qm = queue
             self.o_skfd = oringin_socket
             #self.loop = asyncio.get_event_loop()
             self.loop = loop
@@ -28,8 +28,8 @@ class Reactor:
                 print(e)
         else:
             self.selector.unregister(key.fileobj)  # 剔除否则循环触发事件
-            await self.queue.put(key)
-            print(self.queue.qsize())
+            await self.qm.put_task(key)
+            # print(self.queue.qsize())
 
     async def loop_reactor(self):
         while True:

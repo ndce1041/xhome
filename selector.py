@@ -63,3 +63,5 @@ class Selector:
     def close(self):
         if self.pf == 'Linux':
             self.selector.close()
+        elif self.pf == 'Windows':
+            pass    

@@ -4,15 +4,16 @@ import asyncio
 import response_maker
 ResponseMaker = response_maker.ResponseMaker
 import select
-
+from logger import log,ERROR
+import queue_manager
 
 
 class Handler:
 
 
-    def __init__(self,url,queue: asyncio.Queue,loop: asyncio.AbstractEventLoop):
+    def __init__(self,url,queue:queue_manager.QueueManager,loop: asyncio.AbstractEventLoop):
         self.url = url
-        self.queue = queue
+        self.qm = queue
         self.loop = loop
         self.request = None
         self.flag = False # 用于标记套接字是否已经关闭
@@ -89,7 +90,7 @@ class Handler:
 
     async def loop_handle(self):
         while True:
-            key = await self.queue.get()
+            key = await self.qm.get_task()
             print("handle step1 get")
             await self.recv_data(key)
             print("handle step2 recv")
