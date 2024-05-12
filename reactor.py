@@ -3,6 +3,7 @@
 import socket
 import asyncio
 from selector import Selector,EVENT_READ
+from logger import log,ERR,INF,WRN,DBG
 
 
 
@@ -15,10 +16,13 @@ class Reactor:
             self.o_skfd = oringin_socket
             #self.loop = asyncio.get_event_loop()
             self.loop = loop
+            self.log = log(self.qm)
+            self.log.log(DBG,'Reactor init success')
         except Exception as e:
-            print('error')
+            self.log.log(ERR,'Reactor init error:'+e)
 
     async def accept(self,key:Selector.selectkey):
+        self.log.log(DBG,'New connection accepted ip')
         if self.o_skfd == key.fd:
             try:
                 new_socket, client_addr = await self.loop.sock_accept(key.fileobj)

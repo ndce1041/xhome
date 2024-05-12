@@ -7,7 +7,7 @@
 
 import asyncio
 from read_config import *
-from logger import log,DBG,INF,ERR,WRN
+# from logger import log
 
 class QueueManager:
     def __init__(self):
@@ -15,7 +15,7 @@ class QueueManager:
         self.log_queue = asyncio.Queue(200)
         self.log_overflow = False
 
-        log(DBG,"Queue init success")
+        # self.log = log(self)
 
     async def put_task(self, task):
         await self.task_queue.put(task)
@@ -23,7 +23,7 @@ class QueueManager:
     async def get_task(self):
         return await self.task_queue.get()
     
-    def log(self,log):
+    def put_log(self,log):
         try:
             self.log_queue.put_nowait(log)
         except asyncio.QueueFull:

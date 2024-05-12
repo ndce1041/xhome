@@ -4,12 +4,11 @@ import asyncio
 import response_maker
 ResponseMaker = response_maker.ResponseMaker
 import select
-from logger import log,ERROR
+from logger import log,ERR,INF,WRN,DBG
 import queue_manager
 
 
 class Handler:
-
 
     def __init__(self,url,queue:queue_manager.QueueManager,loop: asyncio.AbstractEventLoop):
         self.url = url
@@ -22,19 +21,19 @@ class Handler:
 
     async def recv_data(self,key):
         # 接收数据
-        print('接收数据中...')
+        # print('接收数据中...')
         sk = key[0]
         sk.setblocking(False)
         recv_data = b''
         while True:
             try:
-                print('recv_data')
+                # print('recv_data')
                 temp = await self.loop.sock_recv(sk,1024)
-                print(temp)
+                # print(temp)
                 recv_data += temp
                 if temp == b'':  # 收到数据小于等于0 说明客户端断开连接
                     try:
-                        print('recv_data close')
+                        # print('recv_data close')
                         # 此时无论如何都不再处理
                         self.flag = True
 
@@ -91,12 +90,12 @@ class Handler:
     async def loop_handle(self):
         while True:
             key = await self.qm.get_task()
-            print("handle step1 get")
+            # print("handle step1 get")
             await self.recv_data(key)
-            print("handle step2 recv")
+            # print("handle step2 recv")
             if not self.flag:
                 await self.handle(key)
-                print("handle step3 handle")
+                # print("handle step3 handle")
             else:
                 key[0].close()
                 self.flag = False
