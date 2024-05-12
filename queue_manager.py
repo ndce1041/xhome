@@ -1,7 +1,8 @@
 """
 队列管理器
-任务队列   task_queue
-日志队列    log_queue
+任务队列   task_queue   类型 selector.Selector.selectkey
+日志队列    log_queue   类型 tuple(rank,timestamp,text)
+消息队列    msg_queue   类型 tuple(target,...) 可用于各种消息传递  (target为目标对象,后续参数为传递的消息
 """
 
 import asyncio

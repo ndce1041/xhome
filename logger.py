@@ -42,8 +42,6 @@ class Logger:
         """
             考虑到py文件io为同步操作,为避免多线程,通过累积日志一次性写入降低io次数
         """
-
-
         log_text = self.log_temp.join('\n')
         self.log_temp = []
         if not self.log_file:

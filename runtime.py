@@ -7,12 +7,14 @@ from url_manager import url_manager
 from read_config import *
 from response_maker import ResponseMaker
 from static_resources_manager import static
+from logger import log,DBG,INF,ERR,WRN,Logger
+from queue_manager import QueueManager
 
 
 
 class Server:
     loop = asyncio.get_event_loop()
-    que = asyncio.Queue()
+    que = QueueManager()
     selector = Selector()
 
 
@@ -25,8 +27,6 @@ class Server:
         or_sk.listen(5)
         self.fd_or_sk = or_sk.fileno()
         self.selector.register(or_sk, EVENT_READ)
-
-
         # 定义无效路径回调
         def not_found(request,key,rest):
             return ResponseMaker(code=404)
@@ -34,6 +34,8 @@ class Server:
         self.url = url_manager(unfound=not_found)
         # 注册默认静态资源回调
         self.url.add(STATIC_URL,static)
+
+        self.log = Logger(self.que)
 
 
 
@@ -43,8 +45,9 @@ class Server:
 
         reactor = Reactor(self.selector, self.que, self.fd_or_sk, self.loop)
         reactor_list.append(reactor.loop_reactor())
+
         for i in range(handlernum):
             handler = Handler(self.url, self.que, self.loop)
             handler_list.append(handler.loop_handle())
 
-        self.loop.run_until_complete(asyncio.gather(*reactor_list, *handler_list))
+        self.loop.run_until_complete(asyncio.gather(*reactor_list, *handler_list, self.log.loop()))
