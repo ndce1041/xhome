@@ -22,23 +22,26 @@ class Reactor:
             self.log.log(ERR,'Reactor init error:'+e)
 
     async def accept(self,key:Selector.selectkey):
-        self.log.log(DBG,'New connection accepted ip')
+        # self.log.log(DBG,'New connection accepted')
         if self.o_skfd == key.fd:
             try:
+                # self.log.log(DBG,'New client')
                 new_socket, client_addr = await self.loop.sock_accept(key.fileobj)
                 new_socket.setblocking(False)
                 self.selector.register(new_socket, EVENT_READ)
             except Exception as e:
                 print(e)
         else:
+            # self.log.log(INF,'new data received')
             self.selector.unregister(key.fileobj)  # 剔除否则循环触发事件
-            await self.qm.put_task(key)
+            self.qm.put_task(key)
+            # self.log.log(DBG,'new data put into queue' + str(self.qm.task_queue.qsize()))
             # print(self.queue.qsize())
 
     async def loop_reactor(self):
         while True:
             event = self.selector.select(0)  # 0表示不阻塞
-            await asyncio.sleep(0.1)
+            # await asyncio.sleep(0.1)
             if event:
                 for key in event:
                     await self.accept(key)

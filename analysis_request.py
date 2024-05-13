@@ -17,7 +17,8 @@ class AnalysisRequest(object):
             self.data_head,self.data_body = recv_data.split(ENTERb*2,1)
             self.head_decode = self.data_head.decode('utf-8')
         except:
-            raise Exception('数据解码失败')
+            #print(recv_data)
+            raise Exception('数据解码失败:analysis_request.py 21')
 
         # 解析请求头
         self.request_head = {"body":self.data_body}

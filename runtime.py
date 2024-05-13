@@ -39,7 +39,7 @@ class Server:
 
 
 
-    def start(self,handlernum=5):
+    def start(self,handlernum=int(CONF['handler_num'])):
         reactor_list = []
         handler_list = []
 

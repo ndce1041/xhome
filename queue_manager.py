@@ -11,14 +11,15 @@ from read_config import *
 
 class QueueManager:
     def __init__(self):
-        self.task_queue = asyncio.Queue(CONF['task_queue_size'])
+        # self.task_queue = asyncio.Queue(CONF['task_queue_size'])
+        self.task_queue = asyncio.Queue()
         self.log_queue = asyncio.Queue(200)
         self.log_overflow = False
 
         # self.log = log(self)
 
-    async def put_task(self, task):
-        await self.task_queue.put(task)
+    def put_task(self, task):
+        self.task_queue.put_nowait(task)
 
     async def get_task(self):
         return await self.task_queue.get()

@@ -17,6 +17,7 @@ class Handler:
         self.request = None
         self.flag = False # 用于标记套接字是否已经关闭
 
+        self.log = log(self.qm)
         pass
 
     async def recv_data(self,key):
@@ -32,26 +33,27 @@ class Handler:
                 # print(temp)
                 recv_data += temp
                 if temp == b'':  # 收到数据小于等于0 说明客户端断开连接
-                    try:
-                        # print('recv_data close')
-                        # 此时无论如何都不再处理
-                        self.flag = True
-
-                        break
-                    except:
-                        pass
+                    self.log.log(INF,'handler:客户端断开连接')
+                    # print('recv_data close')
+                    # 此时无论如何都不再处理
+                    self.flag = True
+                    break
                 a,_,_ = select.select([sk],[],[],0)
+                self.log.log(DBG,'handler:recv_data:select:%s'%str(a))
                 if not a:
-                    # sk读空
+                    self.log.log(DBG,'handler:recv_data:select:break')
                     break
             except Exception as e:
                 # 此时发送未知错误
-                print('recv_data error')
+                self.log.log(ERR,'handler:recv_data:未知错误:%s'%str(e))
                 break
         
         # 分割数据
         try:
-            self.request = AnalysisRequest(recv_data)
+            if recv_data:
+                self.request = AnalysisRequest(recv_data)
+            # self.log.log(DBG,'handler:recv_data:AnalysisRequest success .... request:%s'%str(self.request["path"]))
+            # self.log.log(DBG,self.url.url)
         except Exception as e:
             print(e)
             self.flag = True
@@ -81,7 +83,7 @@ class Handler:
             #     # 注意回调函数需要自己关闭套接字
             #     pass
             else:
-                print(ans.content())
+                # print(ans.content())
                 await self.loop.sock_sendall(key.fileobj,ans.content())
 
             key[0].close()
@@ -90,8 +92,10 @@ class Handler:
     async def loop_handle(self):
         while True:
             key = await self.qm.get_task()
+            self.log.log(DBG,'handler:New data received')
             # print("handle step1 get")
             await self.recv_data(key)
+            self.log.log(DBG,'handler:Data received')
             # print("handle step2 recv")
             if not self.flag:
                 await self.handle(key)

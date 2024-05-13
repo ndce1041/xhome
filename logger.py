@@ -90,12 +90,12 @@ class log:
 
         if int(rank[0]) < self.log_rank:
             return False
-        log = (rank, time.time(), log)
+        log = (rank, time.time(), str(log))
         self.qm.put_log(log)
         return True
     
     def log_text(self,rank, log:str):
         if int(rank[0]) < self.log_rank:
             return False
-        log = (rank, time.time(), log)
+        log = (rank, time.time(), str(log))
         return log
