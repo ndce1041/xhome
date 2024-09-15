@@ -35,7 +35,8 @@ class Server:
         # 注册默认静态资源回调
         self.url.add(STATIC_URL,static)
 
-        self.log = Logger(self.que)
+        self.logger = Logger(self.que)
+        self.log = log(self.que)
 
 
 
@@ -52,4 +53,4 @@ class Server:
             handler = Handler(self.url, self.que, self.loop, handler_id[i]) 
             handler_list.append(handler.loop_handle())
 
-        self.loop.run_until_complete(asyncio.gather(*reactor_list, *handler_list, self.log.loop()))
+        self.loop.run_until_complete(asyncio.gather(*reactor_list, *handler_list, self.logger.loop()))
