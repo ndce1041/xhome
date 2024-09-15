@@ -10,7 +10,7 @@ import queue_manager
 
 class Handler:
 
-    def __init__(self,url,queue:queue_manager.QueueManager,loop: asyncio.AbstractEventLoop):
+    def __init__(self,url,queue:queue_manager.QueueManager,loop: asyncio.AbstractEventLoop,id:int):
         self.url = url
         self.qm = queue
         self.loop = loop
@@ -29,7 +29,7 @@ class Handler:
         while True:
             try:
                 # print('recv_data')
-                temp = await self.loop.sock_recv(sk,1024)
+                temp = await asyncio.wait_for(self.loop.sock_recv(sk,1024),timeout=0.5) 
                 # print(temp)
                 recv_data += temp
                 if temp == b'':  # 收到数据小于等于0 说明客户端断开连接
@@ -46,6 +46,7 @@ class Handler:
             except Exception as e:
                 # 此时发送未知错误
                 self.log.log(ERR,'handler:recv_data:未知错误:%s'%str(e))
+                self.flag = True
                 break
         
         # 分割数据
@@ -55,7 +56,7 @@ class Handler:
             # self.log.log(DBG,'handler:recv_data:AnalysisRequest success .... request:%s'%str(self.request["path"]))
             # self.log.log(DBG,self.url.url)
         except Exception as e:
-            print(e)
+            self.log.log(ERR,'handler:recv_data:AnalysisRequest error:%s'%str(e))
             self.flag = True
 
             #raise Exception('请求头解析失败%s' % str(client_addr) )
@@ -86,7 +87,11 @@ class Handler:
                 # print(ans.content())
                 await self.loop.sock_sendall(key.fileobj,ans.content())
 
-            key[0].close()
+            # 判断是否需要关闭套接字 保持连接则重新接收数据
+            if self.request['keep-alive'] == 'close':
+                key[0].close()
+            else:
+                self.qm.put_task(key) # 不考虑指定同一个处理者
             ####
 
     async def loop_handle(self):
@@ -103,4 +108,9 @@ class Handler:
             else:
                 key[0].close()
                 self.flag = False
+
+
+            # TODO 查询消息队列是否有数据
+
+
                 

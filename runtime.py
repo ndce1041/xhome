@@ -42,12 +42,14 @@ class Server:
     def start(self,handlernum=int(CONF['handler_num'])):
         reactor_list = []
         handler_list = []
+        handler_id = []
 
         reactor = Reactor(self.selector, self.que, self.fd_or_sk, self.loop)
         reactor_list.append(reactor.loop_reactor())
 
         for i in range(handlernum):
-            handler = Handler(self.url, self.que, self.loop)
+            handler_id.append(1000+i)
+            handler = Handler(self.url, self.que, self.loop, handler_id[i]) 
             handler_list.append(handler.loop_handle())
 
         self.loop.run_until_complete(asyncio.gather(*reactor_list, *handler_list, self.log.loop()))

@@ -9,8 +9,10 @@ from logger import log,ERR,INF,WRN,DBG
 
 class Reactor:
 
-    def __init__(self,selector:Selector,queue,oringin_socket:int,loop:asyncio.AbstractEventLoop):
+    def __init__(self,selector:Selector,queue,oringin_socket:int,loop:asyncio.AbstractEventLoop,handler_id:list):
         try:
+            self.handler_id = handler_id
+
             self.selector = selector
             self.qm = queue
             self.o_skfd = oringin_socket
@@ -18,6 +20,14 @@ class Reactor:
             self.loop = loop
             self.log = log(self.qm)
             self.log.log(DBG,'Reactor init success')
+
+            ### TODO
+            self.sdtopic = self.qm.new_topic('shutdown')
+
+
+
+
+
         except Exception as e:
             self.log.log(ERR,'Reactor init error:'+e)
 
@@ -47,3 +57,12 @@ class Reactor:
                     await self.accept(key)
             else:
                 pass
+
+
+            # TODO 通过队列管理处理器数量
+
+            """
+                topic: shotdown
+                (1,time,id)
+            """
+
